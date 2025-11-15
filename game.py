@@ -1,0 +1,183 @@
+import pygame
+import random
+from Countries import Countries
+from algorithms import glow
+from json import load, dump
+from enum import Enum, auto, IntEnum
+import settings
+import os
+import sys
+import datetime
+from dataclasses import dataclass, field
+from typing import Optional, Any
+
+
+#check if sys is good
+if(getattr(sys, "frozen", False)): 
+    base_path = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
+else:
+    base_path = os.path.dirname(os.path.abspath(__file__))
+
+THICCMAX = 5
+
+@dataclass
+class Vectoi:
+    x: int = 0
+    y: int = 0
+    
+    def to_tuple(self) -> tuple[int, int]:
+        return(self.x, self.y)
+
+@dataclass
+class ButtonConfig:
+    string: str = ""
+    thiccccc: int = 0
+    image: Optional[pygame.Surface] = None
+
+class ButtonDraw:
+    pos: Vectoi = field(default_factory=Vectoi)
+    size: Vectoi = field(default_factory=Vectoi)
+    button = ButtonConfig = field(default_factory=ButtonConfig)
+    text: Optional[str] = None
+    text_font: Optional[pygame.font.Font] = None
+
+class Menu(Enum): #create a unique constant value for each menu
+    MAIN_MENU = auto()
+    COUNTRY_SELECT = auto()
+    SETTINGS = auto()
+    CREDITS = auto()
+    GAME = auto()
+    ESCAPEMENU = auto()
+
+
+def compare_cords(mouse_pos, object):
+        if(mouse_pos == object):
+            return True 
+        else:
+            return False
+
+
+#class Game:
+#    def __init__(self, screen, clock):
+#        self.screen = screen
+#        self.clock = clock
+#        self.width, self.height = self.screen.get_size()
+#        
+#        self.world = World(10, 10, self.width, self.height)
+#        
+#        map = Map("Modern World", (0, 0), 1)
+        
+def main():
+    pygame.display.set_caption("OpenCATS")
+    icon = pygame.image.load(os.path.join(base_path, "ui", "HOMOkisssssssssss.png"))
+    #make icon
+    
+    speed = 0
+    sidebar_tab = ""
+    sidebar_pos = -625
+    
+    #TODO: add musics
+    music_tracks = ["", ""]
+    music_index = 0
+    
+    pygame.init()
+    screen = pygame.display.set_mode((1920, 1080), pygame.DOUBLEBUF | pygame.SCALED, vsync=1)
+    
+    pygame.mixer.init()
+    
+    #NOTE: keep this for debugg reasons
+    
+    current_menu = Menu.GAME
+    tick = 0
+    mouse_just_pressed = False
+    mouse_scroll = 0
+    
+    settings_json: dict[str, Any] = {
+        "Scroll Invert": 1,
+        "UI Size": 14,
+        "FPS": 60,
+        "Sound Volume": 50,
+        "Music Volume": 50,
+        "Music Track": "Some song" #TODO" change this to default song
+    }
+    
+    try:
+        with open(os.path.join(base_path, "settings.json")) as f:
+            settings_json = load(f)
+    except FileNotFoundError:
+        with open(os.path.join(base_path, "settings.json"), "w") as f:
+            dump(settings_json, f)
+    
+    with open(os.path.join(base_path, "province-centers.json")) as f:
+        province_centers = load(f)
+    
+    pygame.font.init()
+    smol_font = pygame.font.Font(os.path.join(base_path, "ui", "font.ttf"), 12 * globals.ui_scale)
+    ui_font = pygame.font.Font(os.path.join(base_path, "ui", "font.ttf"), 12 * globals.ui_scale)
+    title_font = pygame.font.Font(os.path.join(base_path, "ui", "font.ttf"), 12 * globals.ui_scale)
+    
+    game_title = glow(title_font.render("OpenCATS", fontalias, primary), 5, primary)
+    game_logo = glow(pygame.image.load(os.path.join(base_path, "ui", "logo.png")).convert_alpha(), 5, primary)
+    
+    menubg = pygame.image.load(os.path.join(base_path, "ui", "menu.png"))    
+    
+    clock = pygame.Clock()
+    
+    main_menu_buttons = [
+        ButtonConfig("Start Game"),
+        ButtonConfig("Continue Game"),        
+        ButtonConfig("Settings"),        
+        ButtonConfig("Credits"),        
+        ButtonConfig("Exit")        
+    ]
+    
+    global_run = True
+    while global_run:
+        match current_menu:
+            case Menu.ESCAPEMENU:
+                #TODO: escapemenu
+                print("on escape")
+            case Menu.MAIN_MENU:
+                screen.blit(game_title, (400, 160))
+                screen.blit(game_logo, (30, 30))
+
+                button_draw = ButtonDraw(
+                    size = Vectoi(160, 40),
+                    text_font = ui_font,
+                    pos = Vectoi(120, game_logo.get_height() + 30)
+                )
+
+                padding: int = 60
+
+                for button in main_menu_buttons:
+                    button_draw.button = button
+
+                    hovered = draw_button(screen, mouse_pos, button_draw)
+                    button_draw.pos.y += padding + button_draw.size.y
+
+                    if not mouse_just_pressed or not hovered:
+                        continue
+                    
+                    match button.string:
+                        case "Start Game":
+                            current_menu = Menu.COUNTRY_SELECT
+                        case "Settings":
+                            current_menu = Menu.SETTINGS
+                        case "Credits":
+                            current_menu = Menu.CREDITS
+                        case "Exit":
+                            global_run = False
+            case Menu.SETTINGS:
+                #TODO: do setings
+                print("on settings")
+            case Menu.COUNTRY_SELECT:
+                print("on country select")
+            case Menu.CREDITS:
+                print("on credits")
+            case Menu.GAME:
+                print("on game")
+
+        tick = tick + 1
+
+        pygame.display.update()
+main()
