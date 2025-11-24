@@ -10,6 +10,12 @@ import sys
 import datetime
 from dataclasses import dataclass, field
 from typing import Optional, Any
+from classes import (
+    fontalias,
+    primary,
+    secondary,
+    tertiary
+)
 
 
 #check if sys is good
@@ -34,12 +40,69 @@ class ButtonConfig:
     thiccccc: int = 0
     image: Optional[pygame.Surface] = None
 
+@dataclass #how I hate you javascript
 class ButtonDraw:
     pos: Vectoi = field(default_factory=Vectoi)
     size: Vectoi = field(default_factory=Vectoi)
-    button = ButtonConfig = field(default_factory=ButtonConfig)
+    button: ButtonConfig = field(default_factory=ButtonConfig)
     text: Optional[str] = None
     text_font: Optional[pygame.font.Font] = None
+
+def draw_button(screen: pygame.Surface, mouse_pos: tuple[int, int], button_draw: ButtonDraw) -> bool:
+    pos = button_draw.pos.to_tuple()
+    size = button_draw.size.to_tuple()
+    button = button_draw.button
+    text = button_draw.text or button.string
+    text_font = button_draw.text_font
+    
+    rect = pygame.Rect(pos, size)
+    
+    hovered = pygame.Rect.collidepoint(rect, mouse_pos)
+    
+    if(hovered):
+        if button.thiccccc < THICCMAX:
+            button.thiccccc = button.thiccccc + 1
+        else:
+            button.thiccccc = max(button.thiccccc - 1, 0)
+    
+    scaled_thicc = button.thiccccc * settings.ui_scale
+    
+    if scaled_thicc:
+        pygame.draw.rect(
+            screen,
+            secondary,
+            pygame.Rect(
+                rect.x - scaled_thicc,
+                rect.y - scaled_thicc,
+                rect.width + scaled_thicc * 2,
+                rect.height + scaled_thicc * 2,    
+            ),
+            border_radius= rect.height * scaled_thicc // 2,
+        )
+        
+        pygame.draw.rect(screen, tertiary, rect, border_radius=rect.height)
+        
+        if(button.image):
+            screen.blit(
+                button.image,
+                (
+                    rect.centerx - button.image.get_width() / 2,
+                    rect.y,
+                ),
+            )
+            
+        if(text and text_font):
+            text_color = secondary if hovered else primary
+            text_surface: pygame.Surface = text_font.render(text, fontalias, text_color)
+            screen.blit(
+                text_surface,
+                (
+                    rect.centerx - text_surface.get_width() / 2,
+                    rect.y + (THICCMAX * settings.ui_scale),
+                ),
+            )
+            
+    return hovered
 
 class Menu(Enum): #create a unique constant value for each menu
     MAIN_MENU = auto()
@@ -87,7 +150,7 @@ def main():
     
     #NOTE: keep this for debugg reasons
     
-    current_menu = Menu.GAME
+    current_menu = Menu.MAIN_MENU
     tick = 0
     mouse_just_pressed = False
     mouse_scroll = 0
@@ -116,8 +179,8 @@ def main():
     ui_font = pygame.font.Font(os.path.join(base_path, "ui", "font.ttf"), 12 * settings.ui_scale)
     title_font = pygame.font.Font(os.path.join(base_path, "ui", "font.ttf"), 12 * settings.ui_scale)
     
-    #game_title = glow(title_font.render("OpenCATS", fontalias, primary), 5, primary)
-    #game_logo = glow(pygame.image.load(os.path.join(base_path, "ui", "logo.png")).convert_alpha(), 5, primary)
+    game_title = glow(title_font.render("OpenCATS", fontalias, primary), 5, primary)
+    game_logo = glow(pygame.image.load(os.path.join(base_path, "ui", "logo.png")).convert_alpha(), 5, primary)
     
     menubg = pygame.image.load(os.path.join(base_path, "ui", "HOMOkisssssssssss.png"))    
     
@@ -139,7 +202,12 @@ def main():
     
     global_run = True
     while global_run:
+        mouse_rel = pygame.mouse.get_rel()
+        mouse_pos = pygame.mouse.get_pos()
+        mouse_scroll = 0
+        mouse_just_pressed = False
 
+        
         for event in pygame.event.get():
             match event.type:
                 case pygame.QUIT:
