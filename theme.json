@@ -1,0 +1,6 @@
+{
+  "primary": [255, 255, 255],
+  "secondary": [255, 0, 127],
+  "tertiary": [32, 0, 16],
+  "fontalias": true
+}
