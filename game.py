@@ -109,19 +109,25 @@ def main():
             dump(settings_json, f)
     
     with open(os.path.join(base_path, "province-centers.json")) as f:
-        province_centers = load(f)
+       province_centers = load(f)
     
     pygame.font.init()
-    smol_font = pygame.font.Font(os.path.join(base_path, "ui", "font.ttf"), 12 * globals.ui_scale)
-    ui_font = pygame.font.Font(os.path.join(base_path, "ui", "font.ttf"), 12 * globals.ui_scale)
-    title_font = pygame.font.Font(os.path.join(base_path, "ui", "font.ttf"), 12 * globals.ui_scale)
+    smol_font = pygame.font.Font(os.path.join(base_path, "ui", "font.ttf"), 12 * settings.ui_scale)
+    ui_font = pygame.font.Font(os.path.join(base_path, "ui", "font.ttf"), 12 * settings.ui_scale)
+    title_font = pygame.font.Font(os.path.join(base_path, "ui", "font.ttf"), 12 * settings.ui_scale)
     
-    game_title = glow(title_font.render("OpenCATS", fontalias, primary), 5, primary)
-    game_logo = glow(pygame.image.load(os.path.join(base_path, "ui", "logo.png")).convert_alpha(), 5, primary)
+    #game_title = glow(title_font.render("OpenCATS", fontalias, primary), 5, primary)
+    #game_logo = glow(pygame.image.load(os.path.join(base_path, "ui", "logo.png")).convert_alpha(), 5, primary)
     
-    menubg = pygame.image.load(os.path.join(base_path, "ui", "menu.png"))    
+    menubg = pygame.image.load(os.path.join(base_path, "ui", "HOMOkisssssssssss.png"))    
     
-    clock = pygame.Clock()
+    clock = pygame.time.Clock()
+    
+    division_pos = pygame.Vector2(screen.get_width() / 2, screen.get_height() / 2)
+    division_path = {}
+    division_time_second = 1.0
+    
+    camera_pos = pygame.Vector2
     
     main_menu_buttons = [
         ButtonConfig("Start Game"),
@@ -133,6 +139,16 @@ def main():
     
     global_run = True
     while global_run:
+
+        for event in pygame.event.get():
+            match event.type:
+                case pygame.QUIT:
+                    global_run = False
+        screen.fill((0, 0, 0)) #clear the screen
+        
+        if(current_menu != Menu.GAME):
+            screen.blit(menubg, (0, 0))
+        
         match current_menu:
             case Menu.ESCAPEMENU:
                 #TODO: escapemenu
@@ -178,6 +194,15 @@ def main():
                 print("on game")
 
         tick = tick + 1
+        
+        division_time_second = division_time_second - clock.tick(settings_json["FPS"])/1000.0
+        
+        if division_time_second <= 0: #somethings is going super wrong
+            print("wait")
+            division_time_second = 1.0
+            if len(division_path) > 0:
+                r, g, b = division_path.pop(0)
+                division_pos = pygame.Vector2(province_centers[f])
 
         pygame.display.update()
 main()
