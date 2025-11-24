@@ -6,6 +6,16 @@ import pygame.gfxdraw
 def deg2rad(deg):
     return deg * (math.pi/180)
 
+# Source - https://stackoverflow.com/a
+# Posted by user24605581
+# Retrieved 2025-11-24, License - CC BY-SA 4.0
+
+def gaussian_blur(surface, radius):
+    scaled_surface = pygame.transform.smoothscale(surface, (surface.get_width() // radius, surface.get_height() // radius))
+    scaled_surface = pygame.transform.smoothscale(scaled_surface, (surface.get_width(), surface.get_height()))
+    return scaled_surface
+
+
 def calculate_distance_LatLon(cords1, cords2):
     #for cords to be defined as an float array of [lat, lon]
     radios = 6372 #radios of the earth
@@ -26,9 +36,9 @@ def glow(surface, thicc, color):
     )
     a = b.copy()
     b.blit(surface, (2 * thicc, 2 * thicc))
-    pygame.transform.gaussian_blur()
+    blurred = gaussian_blur(b, thicc)
     a.fill(color, special_flags=pygame.BLEND_RGBA_MIN)
-    a.blit(surface, (2 * thicc, 2 * thicc), special_flags=pygame.BLEND_RGBA_ADD)
+    a.blit(blurred, (0, 0), special_flags=pygame.BLEND_RGBA_ADD)
     return a
 
 def round_corners(surface, radius):
