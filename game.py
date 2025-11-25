@@ -144,7 +144,7 @@ def main():
     music_index = 0
     
     pygame.init()
-    screen = pygame.display.set_mode((1920, 1080), pygame.DOUBLEBUF | pygame.SCALED, vsync=1)
+    screen = pygame.display.set_mode((1068, 768), pygame.DOUBLEBUF | pygame.SCALED, vsync=1)
     
     pygame.mixer.init()
     
@@ -175,9 +175,9 @@ def main():
        province_centers = load(f)
     
     pygame.font.init()
-    smol_font = pygame.font.Font(os.path.join(base_path, "ui", "font.ttf"), 12 * settings.ui_scale)
-    ui_font = pygame.font.Font(os.path.join(base_path, "ui", "font.ttf"), 12 * settings.ui_scale)
-    title_font = pygame.font.Font(os.path.join(base_path, "ui", "font.ttf"), 12 * settings.ui_scale)
+    smol_font = pygame.font.Font(os.path.join(base_path, "ui", "font.ttf"), 1 * settings.ui_scale)
+    ui_font = pygame.font.Font(os.path.join(base_path, "ui", "font.ttf"), 5 * settings.ui_scale)
+    title_font = pygame.font.Font(os.path.join(base_path, "ui", "font.ttf"), 12 * settings.title_scale)
     
     menubg = pygame.image.load(os.path.join(base_path, "ui", "HOMOkisssssssssss.png"))
     game_title = glow(title_font.render("OpenCATS", fontalias, primary), 5, primary)
@@ -204,7 +204,7 @@ def main():
     padding = 60
     total_button_height = len(main_menu_buttons) * 40 + (len(main_menu_buttons) - 1) * padding
     
-    starting_y = ((screen.get_height() // 2) - (total_button_height // 2)) - 30
+    starting_y = ((screen.get_height() // 2) - (total_button_height // 2)) - 60
     
     global_run = True
     while global_run:
