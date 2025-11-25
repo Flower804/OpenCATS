@@ -133,7 +133,7 @@ def compare_cords(mouse_pos, object):
 def main():
     pygame.display.set_caption("OpenCATS")
     icon = pygame.image.load(os.path.join(base_path, "ui", "HOMOkisssssssssss.png"))
-    #make icon
+    pygame.display.set_icon(icon)
     
     speed = 0
     sidebar_tab = ""
@@ -179,10 +179,11 @@ def main():
     ui_font = pygame.font.Font(os.path.join(base_path, "ui", "font.ttf"), 12 * settings.ui_scale)
     title_font = pygame.font.Font(os.path.join(base_path, "ui", "font.ttf"), 12 * settings.ui_scale)
     
+    menubg = pygame.image.load(os.path.join(base_path, "ui", "HOMOkisssssssssss.png"))
     game_title = glow(title_font.render("OpenCATS", fontalias, primary), 5, primary)
-    game_logo = glow(pygame.image.load(os.path.join(base_path, "ui", "logo.png")).convert_alpha(), 5, primary)
+    game_logo = glow(pygame.image.load(os.path.join(base_path, "ui", "logo.png")).convert_alpha(), 5, primary)    
     
-    menubg = pygame.image.load(os.path.join(base_path, "ui", "HOMOkisssssssssss.png"))    
+    sprites = pygame.sprite.Group()
     
     clock = pygame.time.Clock()
     
@@ -212,6 +213,26 @@ def main():
             match event.type:
                 case pygame.QUIT:
                     global_run = False
+                
+                case pygame.KEYDOWN:
+                    match event.key:
+                        case pygame.K_F4:
+                            pygame.display.toggle_fullscreen()
+                        case pygame.K_ESCAPE:
+                            if current_menu == Menu.CREDITS:
+                                current_menu = Menu.MAIN_MENU
+                            if current_menu == Menu.GAME:
+                                current_menu = Menu.ESCAPEMENU
+                case pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:
+                        mouse_just_pressed = True
+                
+                case  pygame.MOUSEBUTTONUP:
+                    if event.button == 1:
+                        mouse_just_pressed = False
+                        
+                        
+                        
         screen.fill((0, 0, 0)) #clear the screen
         
         if(current_menu != Menu.GAME):
@@ -219,19 +240,49 @@ def main():
         
         match current_menu:
             case Menu.ESCAPEMENU:
-                #TODO: escapemenu
-                print("on escape")
+                dark_overlay = pygame.Surface((screen.get_width(), screen.get_height))
+                dark_overlay.set_alpha(180)
+                dark_overlay.fill((0, 0, 0))
+                screen.blit(dark_overlay, (0, 0))
+                
+                button_draw = ButtonDraw(
+                    size = Vec2i(160, 40),
+                    text_font = ui_font
+                )
+                
+                padding: int = 60
+                button_draw.pos = Vec2i(120, screen.get_height()//2 - padding - button_draw.size.y)
+
+                for button in escape_buttons:
+                    button_draw.button = button
+
+                    hovered = draw_button(screen, mouse_pos, button_draw)
+
+                    button_draw.pos.y += button_draw.size.y + padding
+
+                    if not mouse_just_pressed or not hovered:
+                        continue
+
+                    match button.string:
+                        case "Resume":
+                            current_menu = Menu.GAME
+                        case "Settings":
+                            current_menu = Menu.SETTINGS
+                        case "Back to Main Menu":
+                            current_menu = Menu.MAIN_MENU
+
             case Menu.MAIN_MENU:
                 screen.blit(game_title, (400, 160))
                 screen.blit(game_logo, (30, 30))
 
                 button_draw = ButtonDraw(
                     size = Vectoi(160, 40),
-                    text_font = ui_font,
-                    pos = Vectoi(120, game_logo.get_height() + 30)
+                    text_font = ui_font
                 )
 
                 padding: int = 60
+                
+                button_draw.pos = Vectoi(screen.get_width() // 2 - button_draw.size.x // 2, 500)
 
                 for button in main_menu_buttons:
                     button_draw.button = button
