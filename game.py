@@ -200,6 +200,11 @@ def main():
         ButtonConfig("Credits"),        
         ButtonConfig("Exit")        
     ]
+    # Calculating the total height of all buttons (including padding)
+    padding = 60
+    total_button_height = len(main_menu_buttons) * 40 + (len(main_menu_buttons) - 1) * padding
+    
+    starting_y = ((screen.get_height() // 2) - (total_button_height // 2)) - 30
     
     global_run = True
     while global_run:
@@ -280,9 +285,7 @@ def main():
                     text_font = ui_font
                 )
 
-                padding: int = 60
-                
-                button_draw.pos = Vectoi(screen.get_width() // 2 - button_draw.size.x // 2, 500)
+                button_draw.pos = Vectoi(screen.get_width() // 2 - button_draw.size.x // 2, starting_y)
 
                 for button in main_menu_buttons:
                     button_draw.button = button
