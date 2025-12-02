@@ -5,6 +5,18 @@ from pygame_widgets.dropdown import Dropdown
 import os
 import sys
 from enum import Enum, auto, IntEnum
+from airplanes import Iventory, ItemType
+#*************************************************************************#
+#                                                                         #
+#                                                                         #
+# main.py                                                      _____      #
+#                                                             _|___ /     #  
+# By: Flower :3 <gabrielmoita34@gmail.com                    (_) |_ \     #  
+# GitHub: Flower804                                           _ ___) |    #  
+# Created: 2025/11/09 17:44:32 by Flower:3                   (_)____/     #                  
+#                                                                         #
+#                                                                         #
+#*************************************************************************#
 
 def load_image_map():
     img = pygame.image.load(os.path.join(base_path, "ui", "Portugal-map-withpoints.jpg")).convert()
@@ -44,6 +56,26 @@ def coords_with_zoom(wx, wy, camera_zoom, camera_x, camera_y):
     sy = wy * camera_zoom + camera_y
     
     return sx, sy
+       
+def draw_iventory(surface, x, y, inventory, font):
+    offset_y = 0
+    
+    for slot in inventory.slots:
+        if slot.type == None:
+            continue
+        
+        #draw the icons
+        surface.blit(slot.type.icon, (x, y + offset_y))
+        
+        #draw name
+        label = font.render(slot.type.name, True, (255, 255, 255))
+        surface.blit(label, (x + 40, y + offset_y + 5))
+        
+        #draw amount
+        amount_label = font.render(f"x{slot.amount}", True, (200, 200, 200))
+        surface.blit(amount_label, (x + 40, y + offset_y + 30))
+        
+        offset_y = offset_y + 60
              
 class Menu(Enum):
     MAIN_MENU = auto()
@@ -76,6 +108,15 @@ def main():
     title = font.render(name, True, (255, 255, 255))
 
     Map = pygame.image.load(os.path.join(base_path, "ui", "Portugal-map.jpg")).convert_alpha()
+    
+    #iventory stuff
+    airplane_small = ItemType("Small Plane", "icon_small.png", stack_size=10)
+    airplane_big = ItemType("Big Plane", "icon_big.png", stack_size=5)
+    
+    player_iventory = Iventory(20)
+    
+    player_iventory.add(airplane_small, 3)
+    player_iventory.add(airplane_big, 1)
     
     #dropdown menus
     dropdown = Dropdown(
@@ -309,12 +350,21 @@ def main():
                     screen.blit(title, (sidebar_x + 20, 20))
                     screen.blit(Airplanes, (Button_Airplanes_x + 10, Button_Airplanes_y + 10))
                     
+                    draw_iventory(
+                        screen,
+                        sidebar_x + 20,
+                        Button_Airplanes_y + 80,
+                        player_iventory,
+                        font
+                    )
+                    
                     hover_shop = Button_Airplanes.collidepoint(mouse_pos)
                     
                     if(pygame.mouse.get_pressed()[0]):
                         if(hover_shop):
                             current_menu = Menu.SHOP
                             print("going to shop")
+                    
                     
                 close_button = pygame.Rect(sidebar_x + SIDEBAR_WIDTH - 40, 10, 30, 30)
                 pygame.draw.rect(screen, (120,0,0), close_button)
