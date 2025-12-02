@@ -6,6 +6,7 @@ import os
 import sys
 from enum import Enum, auto, IntEnum
 from airplanes import Iventory, ItemType
+from plane import Plane
 #*************************************************************************#
 #                                                                         #
 #                                                                         #
@@ -26,7 +27,7 @@ def load_image_map():
     special_points = {
         "Humberto Delgado Airport ": [],
         "Francisco Sa Carneiro Airport ": [],
-        "Aeroporto Internacional Gago Coutinho, Faro": []
+        "AI Gago Coutinho": []
     }
     
     for i in range(height):
@@ -41,7 +42,7 @@ def load_image_map():
                 print("special point on ")
                 print((i, j))
             elif color == (255, 0, 2):
-                special_points["Aeroporto Internacional Gago Coutinho, Faro"] = (j, i)
+                special_points["AI Gago Coutinho"] = (j, i)
                 print("special point on ")
                 print((i, j))
             elif color == (255, 0, 3):
@@ -88,6 +89,8 @@ base_path = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
 
 #main menu things
 
+planes = pygame.sprite.Group()
+
 def main():
     pygame.display.set_caption("OpenCATS")
     icon = pygame.image.load(os.path.join(base_path, "ui", "HOMOkisssssssssss.png"))
@@ -118,34 +121,63 @@ def main():
     player_iventory.add(airplane_small, 3)
     player_iventory.add(airplane_big, 1)
     
+    
+    map_pixels, points = load_image_map()
+    
+    selected_airport = "Humberto Delgado Airport "
+    
     #dropdown menus
+    airport_names = list(points.keys())
+    
     dropdown = Dropdown(
         screen,
         -9999, 100,
         200, 40,
-        name = 'Selected Color',
-        choices=['Red', 'Blue', 'Yellow'],
+        name = 'Select airport',
+        choices= airport_names,
         borderRadius = 3,
         colour = pygame.Color('green'),
-        values = [1, 2, 'true'],
+        values = airport_names,
         direction = 'down',
         textHAlign = 'left'
     )
     
     def print_values():
-        print(dropdown.getSelected())
+        #airport_to_go = dropdown.getSelected()
+        #
+        #print(selected_airport)
+        #print(" to go to ")
+        #print(airport_to_go)
+        
+        airport_from = selected_airport
+        airport_to = dropdown.getSelected()
+        
+        start = points[airport_from]
+        end = points[airport_to]
+        
+        start_screen = coords_with_zoom(start[0], start[1], camera_zoom, camera_x, camera_y)
+        end_screen = coords_with_zoom(end[0], end[1], camera_zoom, camera_x, camera_y)
+        
+        plane = Plane(
+            os.path.join(base_path, "airplanes", "icon_small.png"),
+            start_screen,
+            end_screen,
+            speed = 2
+        )
+        
+        planes.add(plane)
         
     sidebar_button = Button(
         screen,
         -9999, 150,
         180, 40,
-        text = 'Print Value',
+        text = 'calculate rout',
         fontSize = 18,
         margin = 5,
         inactiveColour = (255, 0, 0),
         pressedColour = (0, 255, 0),
         radius = 5,
-        onClick = print_values,
+        onClick = lambda: print_values(), #lambda prevents the function of running imidealtly
         font = pygame.font.SysFont('calibri', 20)
     ) 
     
@@ -170,7 +202,6 @@ def main():
     tick = 0
     
     global_run = True
-    map_pixels, points = load_image_map()
     while global_run:
         events = pygame.event.get()
         for event in events:
@@ -246,7 +277,7 @@ def main():
                 
                 #coordinates from converter 
                 hx, hy = points["Humberto Delgado Airport "]
-                ax, ay = points["Aeroporto Internacional Gago Coutinho, Faro"]
+                ax, ay = points["AI Gago Coutinho"]
                 fx, fy = points["Francisco Sa Carneiro Airport "]
 
                 #transformed with zoom
@@ -275,7 +306,7 @@ def main():
                 pygame.draw.rect(screen, (0, 0, 0), Button_Francisco, border_radius = 10)
                  
                 humberto = font.render("Humberto Delgado", True, (245, 222, 179))
-                Faro = font.render("Aeroporto Internacional Gago Coutinho, Faro", True, (245, 222, 179))
+                Faro = font.render("AI Gago Coutinho", True, (245, 222, 179))
                 Francisco = font.render("Francisco Sa Carneiro", True, (245, 222, 179))
                 
                 #--------------------- Buttons on the side bar--------------------------------------
@@ -301,15 +332,15 @@ def main():
                 if(pygame.mouse.get_pressed()[0]):
                     if(hover_humberto):
                         #print("clicked humberto")
-                        selected_airport = "Humberto Delgado"
+                        selected_airport = "Humberto Delgado Airport "
                         sidebar_open = True
                     if(hover_Faro):
                         #print("clicked Faro")
-                        selected_airport = "Aeroporto Internacional Gago Coutinho, Faro"
+                        selected_airport = "AI Gago Coutinho"
                         sidebar_open = True
                     if(hover_Francisco):
                         #rint("clicked Francisco")
-                        selected_airport = "Francisco Sa Carneiro"
+                        selected_airport = "Francisco Sa Carneiro Airport "
                         sidebar_open = True
                     #TODO: fix this so that the buttons on the sidebar are still usable
                     #if((not hover_humberto) and (not hover_Faro) and (not hover_Francisco)):
@@ -374,6 +405,9 @@ def main():
                 if(pygame.mouse.get_pressed()[0]):
                     if(close_button.collidepoint(mouse_pos)):
                         sidebar_open = False
+                        
+                planes.update()
+                planes.draw(screen)
                 #print("on game")
                 #print(points)
             case Menu.SHOP:
