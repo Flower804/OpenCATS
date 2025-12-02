@@ -49,6 +49,7 @@ class Menu(Enum):
     MAIN_MENU = auto()
     SETTINGS = auto()
     GAME = auto()
+    SHOP = auto()
     ESCAPEMENU = auto()
     
 base_path = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))    
@@ -200,6 +201,8 @@ def main():
                 print("in main menu")
                 
             case Menu.GAME:
+                #---------------------Buttons and things for airports-------------------------
+                
                 #coordinates from converter 
                 hx, hy = points["Humberto Delgado Airport "]
                 ax, ay = points["Aeroporto Internacional Gago Coutinho, Faro"]
@@ -234,9 +237,20 @@ def main():
                 Faro = font.render("Aeroporto Internacional Gago Coutinho, Faro", True, (245, 222, 179))
                 Francisco = font.render("Francisco Sa Carneiro", True, (245, 222, 179))
                 
+                #--------------------- Buttons on the side bar--------------------------------------
+                
+                Button_Airplanes_x = sidebar_x + 20
+                Button_Airplanes_y = 240
+                
+                Button_Airplanes = pygame.Rect(Button_Airplanes_x, Button_Airplanes_y, 180, 40)
+                pygame.draw.rect(screen, (0, 0, 0), Button_Airplanes, border_radius = 10)
+                Airplanes = font.render("Buy Airplanes", True, (245, 222, 179))
+                
+                title = font.render("Your frot", True, (255, 255, 255))
+                
                 screen.blit(humberto, (hx_s, hy_s))
                 screen.blit(Faro, (ax_s, ay_s))
-                screen.blit(Francisco, (fx_s, fy_s))
+                screen.blit(Francisco, (fx_s, fy_s))                
                 
                 mouse_pos = pygame.mouse.get_pos()
                 hover_humberto = Button_humberto.collidepoint(mouse_pos)
@@ -256,7 +270,9 @@ def main():
                         #rint("clicked Francisco")
                         selected_airport = "Francisco Sa Carneiro"
                         sidebar_open = True
-                
+                    #TODO: fix this so that the buttons on the sidebar are still usable
+                    #if((not hover_humberto) and (not hover_Faro) and (not hover_Francisco)):
+                    #    sidebar_open = False
                 if(sidebar_open and sidebar_x < 0):
                     sidebar_x = sidebar_x + SIDEBAR_SPEED
                 elif(not sidebar_open and sidebar_x):
@@ -269,7 +285,7 @@ def main():
                     title = font.render(selected_airport, True, (255, 255, 255))
                     screen.blit(title, (sidebar_x + 20, 20))
                     
-                    info_label = font.render("Airport InformationL ", True, (200, 200, 200))
+                    info_label = font.render("Airport Information ", True, (200, 200, 200))
                     screen.blit(info_label, (sidebar_x + 20, 80))
                     
                     dropdown.setX(sidebar_x + 20)
@@ -281,8 +297,16 @@ def main():
                     dropdown.setX(-9999)
                     sidebar_button.setX(-9999)
                     
-                    title = font.render("Your frot", True, (255, 255, 255))
                     screen.blit(title, (sidebar_x + 20, 20))
+                    screen.blit(Airplanes, (Button_Airplanes_x + 10, Button_Airplanes_y + 10))
+                    
+                    hover_shop = Button_Airplanes.collidepoint(mouse_pos)
+                    
+                    if(pygame.mouse.get_pressed()[0]):
+                        if(hover_shop):
+                            #current_menu = Menu.SHOP
+                            print("going to shop")
+                    
                 close_button = pygame.Rect(sidebar_x + SIDEBAR_WIDTH - 40, 10, 30, 30)
                 pygame.draw.rect(screen, (120,0,0), close_button)
                 x_label = font.render("X", True, (255, 255, 255))
