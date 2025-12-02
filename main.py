@@ -172,9 +172,9 @@ def main():
                 button_w = int(180 * camera_zoom)
                 button_h = int(180 * camera_zoom)
                 
-                Button_humberto =  pygame.Rect((hx + camera_x), (hy + camera_y), button_w, button_h)
-                Button_Faro = pygame.Rect((ax + camera_x), (ay + camera_y), 300, 100)
-                Button_Francisco = pygame.Rect((fx + camera_x), (fy + camera_y), 300, 100)
+                Button_humberto =  pygame.Rect(hx_s, hy_s, button_w, button_h)
+                Button_Faro = pygame.Rect(ax_s, ay_s, button_w, button_h)
+                Button_Francisco = pygame.Rect(fx_s, fy_s, button_w, button_h)
                 
                 #screen.blit(gamebg, (camera_x, camera_y)) --> no scale
                 scaled_map = pygame.transform.smoothscale(
@@ -193,9 +193,9 @@ def main():
                 Faro = font.render("Aeroporto Internacional Gago Coutinho, Faro", True, (245, 222, 179))
                 Francisco = font.render("Francisco Sa Carneiro", True, (245, 222, 179))
                 
-                screen.blit(humberto, (hx + camera_x, hy + camera_y))
-                screen.blit(Faro, (ax + camera_x, ay + camera_y))
-                screen.blit(Francisco, (fx + camera_x, fy + camera_y))
+                screen.blit(humberto, (hx_s, hy_s))
+                screen.blit(Faro, (ax_s, ay_s))
+                screen.blit(Francisco, (fx_s, fy_s))
                 
                 mouse_pos = pygame.mouse.get_pos()
                 hover_humberto = Button_humberto.collidepoint(mouse_pos)
@@ -211,7 +211,7 @@ def main():
                         print("clicked Francisco")
                         
                 
-                print("on game")
+                #print("on game")
                 #print(points)
             case Menu.SETTINGS:
                 print("on Settings")
