@@ -1,4 +1,7 @@
 import pygame
+import pygame_widgets
+from pygame_widgets.button import Button
+from pygame_widgets.dropdown import Dropdown
 import os
 import sys
 from enum import Enum, auto, IntEnum
@@ -73,6 +76,37 @@ def main():
 
     Map = pygame.image.load(os.path.join(base_path, "ui", "Portugal-map.jpg")).convert_alpha()
     
+    #dropdown menus
+    dropdown = Dropdown(
+        screen,
+        -9999, 100,
+        200, 40,
+        name = 'Selected Color',
+        choices=['Red', 'Blue', 'Yellow'],
+        borderRadius = 3,
+        colour = pygame.Color('green'),
+        values = [1, 2, 'true'],
+        direction = 'down',
+        textHAlign = 'left'
+    )
+    
+    def print_values():
+        print(dropdown.getSelected())
+        
+    sidebar_button = Button(
+        screen,
+        -9999, 150,
+        180, 40,
+        text = 'Print Value',
+        fontSize = 18,
+        margin = 5,
+        inactiveColour = (255, 0, 0),
+        pressedColour = (0, 255, 0),
+        radius = 5,
+        onClick = print_values,
+        font = pygame.font.SysFont('calibri', 20)
+    ) 
+    
     #camera things
     camera_x = 0
     camera_y = 0
@@ -82,6 +116,13 @@ def main():
     
     speed = 0
     
+    #menus
+    sidebar_open = False
+    sidebar_x = -300
+    SIDEBAR_WIDTH = 300
+    SIDEBAR_SPEED = 20
+    selected_airport = None
+    
     #debug things
     current_menu = Menu.MAIN_MENU
     tick = 0
@@ -89,7 +130,8 @@ def main():
     global_run = True
     map_pixels, points = load_image_map()
     while global_run:
-        for event in pygame.event.get():
+        events = pygame.event.get()
+        for event in events:
             match event.type:
                 case pygame.QUIT:
                     global_run = False
@@ -109,7 +151,6 @@ def main():
                     camera_zoom = camera_zoom - zoom_speed
                     
             camera_zoom = max(0.3, min(3.0, camera_zoom))    #cap the zoom bethwenm 3 amd 0.3                
-                    
         keys = pygame.key.get_pressed()
         
         if(keys[pygame.K_w]):
@@ -204,17 +245,57 @@ def main():
                 
                 if(pygame.mouse.get_pressed()[0]):
                     if(hover_humberto):
-                        print("clicked humberto")
+                        #print("clicked humberto")
+                        selected_airport = "Humberto Delgado"
+                        sidebar_open = True
                     if(hover_Faro):
-                        print("clicked Faro")
+                        #print("clicked Faro")
+                        selected_airport = "Aeroporto Internacional Gago Coutinho, Faro"
+                        sidebar_open = True
                     if(hover_Francisco):
-                        print("clicked Francisco")
-                        
+                        #rint("clicked Francisco")
+                        selected_airport = "Francisco Sa Carneiro"
+                        sidebar_open = True
                 
+                if(sidebar_open and sidebar_x < 0):
+                    sidebar_x = sidebar_x + SIDEBAR_SPEED
+                elif(not sidebar_open and sidebar_x):
+                    sidebar_x = sidebar_x - SIDEBAR_SPEED 
+                    
+                sidebar_rect = pygame.Rect(sidebar_x, 0, SIDEBAR_WIDTH, screen.get_height())
+                pygame.draw.rect(screen, (30, 30, 30), sidebar_rect)
+                
+                if sidebar_open and selected_airport:
+                    title = font.render(selected_airport, True, (255, 255, 255))
+                    screen.blit(title, (sidebar_x + 20, 20))
+                    
+                    info_label = font.render("Airport InformationL ", True, (200, 200, 200))
+                    screen.blit(info_label, (sidebar_x + 20, 80))
+                    
+                    dropdown.setX(sidebar_x + 20)
+                    dropdown.setY(120)
+                    
+                    sidebar_button.setX(sidebar_x + 20)
+                    sidebar_button.setY(180)
+                else:
+                    dropdown.setX(-9999)
+                    sidebar_button.setX(-9999)
+                    
+                    title = font.render("Your frot", True, (255, 255, 255))
+                    screen.blit(title, (sidebar_x + 20, 20))
+                close_button = pygame.Rect(sidebar_x + SIDEBAR_WIDTH - 40, 10, 30, 30)
+                pygame.draw.rect(screen, (120,0,0), close_button)
+                x_label = font.render("X", True, (255, 255, 255))
+                screen.blit(x_label, (sidebar_x + SIDEBAR_WIDTH - 35, 12))
+                
+                if(pygame.mouse.get_pressed()[0]):
+                    if(close_button.collidepoint(mouse_pos)):
+                        sidebar_open = False
                 #print("on game")
                 #print(points)
             case Menu.SETTINGS:
                 print("on Settings")
+        pygame_widgets.update(events)
         pygame.display.update()
 
 main()
