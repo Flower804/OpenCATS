@@ -2,6 +2,18 @@ import math
 import numpy
 import pygame
 
+#*************************************************************************#
+#                                                                         #
+#                                                                         #
+# algorithms.py                                                _____      #
+#                                                             _|___ /     #  
+# By: Flower :3 <gabrielmoita34@gmail.com                    (_) |_ \     #  
+# GitHub: Flower804                                           _ ___) |    #  
+# Created: 2025/11/09 18:34:32 by Flower:3                   (_)____/     #                  
+#                                                                         #
+#                                                                         #
+#*************************************************************************#
+
 def deg2rad(deg):
     return deg * (math.pi/180)
 
