@@ -291,8 +291,17 @@ def main():
                     dropdown.setX(sidebar_x + 20)
                     dropdown.setY(120)
                     
+                    DROPDOWN_WIDTH = 200
+                    SPACING = 20
+                    
                     sidebar_button.setX(sidebar_x + 20)
                     sidebar_button.setY(180)
+                    
+                    text_x = dropdown.getX() + dropdown.getWidth() + 10
+                    text_y = dropdown.getY()
+                    
+                    current_selected = font.render(selected_airport, True, (255, 255, 255))
+                    screen.blit(current_selected, (text_x, text_y))
                 else:
                     dropdown.setX(-9999)
                     sidebar_button.setX(-9999)
@@ -304,7 +313,7 @@ def main():
                     
                     if(pygame.mouse.get_pressed()[0]):
                         if(hover_shop):
-                            #current_menu = Menu.SHOP
+                            current_menu = Menu.SHOP
                             print("going to shop")
                     
                 close_button = pygame.Rect(sidebar_x + SIDEBAR_WIDTH - 40, 10, 30, 30)
@@ -317,6 +326,14 @@ def main():
                         sidebar_open = False
                 #print("on game")
                 #print(points)
+            case Menu.SHOP:
+                for event in events:
+                    match event.type:
+                        case pygame.KEYDOWN:
+                            match event.key:
+                                case pygame.K_ESCAPE:
+                                    current_menu = Menu.GAME
+                #Button_exit = pygame.rect()
             case Menu.SETTINGS:
                 print("on Settings")
         pygame_widgets.update(events)
