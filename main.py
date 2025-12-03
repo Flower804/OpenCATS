@@ -4,9 +4,12 @@ from pygame_widgets.button import Button
 from pygame_widgets.dropdown import Dropdown
 import os
 import sys
+import time
+import datetime
 from enum import Enum, auto, IntEnum
 from airplanes import Iventory, ItemType
 from plane import Plane
+from save import get_money, get_planes, update_money
 #*************************************************************************#
 #                                                                         #
 #                                                                         #
@@ -18,6 +21,21 @@ from plane import Plane
 #                                                                         #
 #                                                                         #
 #*************************************************************************#
+base_path = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__))) 
+
+pygame.display.set_caption("OpenCATS")
+icon = pygame.image.load(os.path.join(base_path, "ui", "HOMOkisssssssssss.png"))
+pygame.display.set_icon(icon)
+
+name = "openCATS"
+
+pygame.init()
+screen = pygame.display.set_mode((1068, 768))
+
+clock = pygame.time.Clock()
+#main menu things
+menubg = pygame.image.load(os.path.join(base_path, "ui", "menu.png")).convert_alpha()
+font = pygame.font.Font(os.path.join(base_path, "ui", "font.ttf"))
 
 def load_image_map():
     img = pygame.image.load(os.path.join(base_path, "ui", "map_withpoints.png")).convert()
@@ -61,8 +79,10 @@ def load_image_map():
 #    sx = wx * camera_zoom + camera_x
 #    sy = wy * camera_zoom + camera_y
 #    
-#    return sx, sy
-       
+#    return sx, sy 
+
+nomoney = False       
+
 def draw_iventory(surface, x, y, inventory, font):
     offset_y = 0
     
@@ -85,31 +105,41 @@ def draw_iventory(surface, x, y, inventory, font):
              
 class Menu(Enum):
     MAIN_MENU = auto()
-    SETTINGS = auto()
+    #SETTINGS = auto()
     GAME = auto()
     SHOP = auto()
     ESCAPEMENU = auto()
     
-base_path = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))    
+#message things
+show_warning = False
+warning_time_start = None
+warning_text = ""
+warning_duration = 0
+
+def show_timed_warning(text):
+    global show_warning, warning_time_start, warning_text, warning_duration
+    show_warning = True
+    warning_time_start = datetime.datetime.now()
+    warning_text = text
+
+def show_nomoney():
+    global show_warning, warning_time_start, warning_text, warning_duration
+    
+    if not show_warning:
+        return
+    
+    if(datetime.datetime.now() - warning_time_start).total_seconds() > 3:
+        show_warning = False
+        return
+
+    warning_surface = font.render(warning_text, True, (255, 0, 0))
+    screen.blit(warning_surface, (44, 457))
 
 #main menu things
 
 planes = pygame.sprite.Group()
 
 def main():
-    pygame.display.set_caption("OpenCATS")
-    icon = pygame.image.load(os.path.join(base_path, "ui", "HOMOkisssssssssss.png"))
-    pygame.display.set_icon(icon)
-    
-    name = "openCATS"
-    
-    pygame.init()
-    screen = pygame.display.set_mode((1068, 768))
-    
-    clock = pygame.time.Clock()
-    #main menu things
-    menubg = pygame.image.load(os.path.join(base_path, "ui", "menu.png")).convert_alpha()
-    font = pygame.font.Font(os.path.join(base_path, "ui", "font.ttf"))
     
     gamebg = pygame.image.load(os.path.join(base_path, "ui", "map.png")).convert_alpha()
     
@@ -120,16 +150,15 @@ def main():
     
     title = font.render(name, True, (255, 255, 255))
 
-    Map = pygame.image.load(os.path.join(base_path, "ui", "Portugal-map.jpg")).convert_alpha()
+    #Map = pygame.image.load(os.path.join(base_path, "ui", "Portugal-map.jpg")).convert_alpha()
     
     #iventory stuff
-    airplane_small = ItemType("Small Plane", "icon_small.png", stack_size=10)
-    airplane_big = ItemType("Big Plane", "icon_big.png", stack_size=5)
+    airplane_small = ItemType("Small Plane", "icon_small.png", stack_size=90)
+    airplane_big = ItemType("Big Plane", "icon_big.png", stack_size=90)
     
     player_iventory = Iventory(20)
     
-    player_iventory.add(airplane_small, 3)
-    player_iventory.add(airplane_big, 1)
+    player_iventory.add(airplane_small, int(get_planes()))
     
     
     map_pixels, points = load_image_map()
@@ -165,11 +194,25 @@ def main():
         return sx, sy
     
     def print_values():
+        global nomoney
         #airport_to_go = dropdown.getSelected()
         #
         #print(selected_airport)
         #print(" to go to ")
         #print(airport_to_go)
+        if (int(get_money())) < 150:
+            print("you dont have enough money")
+            show_timed_warning("You dont have enough money for this")
+            return
+        
+        update_money((int(get_money()) - 150))
+        
+        if player_iventory.has(airplane_small, 1) == False:
+            print("you dont have any airplanes available")
+            update_money((int(get_money()) + 150))
+            return
+        
+        player_iventory.remove(airplane_small, 1)
         
         airport_from = selected_airport
         airport_to = dropdown.getSelected()
@@ -184,7 +227,9 @@ def main():
             os.path.join(base_path, "airplanes", "icon_small.png"),
             scale_start,
             scale_end,
-            speed = 2
+            speed = 2,
+            inventory = player_iventory,
+            item_type = airplane_small
         )
         
         planes.add(plane)
@@ -203,12 +248,17 @@ def main():
         font = pygame.font.SysFont('calibri', 20)
     ) 
     
+    def get_current_time():
+        time = datetime.datetime.now()
+        
+        return time
+    
     #camera things
-    camera_x = 0
-    camera_y = 0
-    scroll_speed = 5
-    camera_zoom = 1.0
-    zoom_speed = 0.1
+    #camera_x = 0
+    #camera_y = 0
+    #scroll_speed = 5
+    #camera_zoom = 1.0
+    #zoom_speed = 0.1
     
     speed = 0
     
@@ -223,6 +273,8 @@ def main():
     current_menu = Menu.MAIN_MENU
     tick = 0
     
+    nomoney = False
+    display_text_nomoney = False
     global_run = True
     while global_run:
         events = pygame.event.get()
@@ -238,14 +290,13 @@ def main():
                         case pygame.K_ESCAPE:
                             if current_menu == Menu.GAME:
                                 current_menu = Menu.ESCAPEMENU
-                                
             #if(event.type == pygame.MOUSEWHEEL):
             #    if(event.y > 0):
             #        camera_zoom = camera_zoom + zoom_speed
             #    else:
             #        camera_zoom = camera_zoom - zoom_speed
                     
-            camera_zoom = max(0.3, min(3.0, camera_zoom))    #cap the zoom bethwenm 3 amd 0.3                
+            #camera_zoom = max(0.3, min(3.0, camera_zoom))    #cap the zoom bethwenm 3 amd 0.3                
         keys = pygame.key.get_pressed()
         
         #if(keys[pygame.K_w]):
@@ -258,10 +309,11 @@ def main():
         #    camera_x = camera_x - scroll_speed
         
         screen.fill((0, 0, 0)) #clear the screen
+                           
         match current_menu:
             case Menu.MAIN_MENU:
                 Button1 = pygame.Rect(380, 250, 300, 100)
-                Button2 = pygame.Rect(380, 375, 300, 100)
+                #Button2 = pygame.Rect(380, 375, 300, 100)
                 Button3 = pygame.Rect(380, 500, 300, 100)
                 
                 screen.blit(menubg, (0, 0))
@@ -269,15 +321,15 @@ def main():
                 
                 #TODO: make buttons grayscale
                 pygame.draw.rect(screen, (0, 0, 0), Button1, border_radius= 10) #screen, color, identity, border
-                pygame.draw.rect(screen, (0, 0, 0), Button2, border_radius= 10) 
+                #pygame.draw.rect(screen, (0, 0, 0), Button2, border_radius= 10) 
                 pygame.draw.rect(screen, (0, 0, 0), Button3, border_radius= 10)
                 
                 play = font.render("Play", True, (245, 222, 179))
-                settings = font.render("Settings", True, (245, 222, 179))
+                #settings = font.render("Settings", True, (245, 222, 179))
                 leave = font.render("Leave", True, (245, 222, 179))
                 
                 screen.blit(play, (Button1.x + 85, Button1.y + 15))
-                screen.blit(settings, (Button2.x + 70, Button2.y + 15))
+                #screen.blit(settings, (Button2.x + 70, Button2.y + 15))
                 screen.blit(leave, (Button3.x + 55, Button3.y + 15))
                 
                 mouse_pos = pygame.mouse.get_pos()
@@ -285,9 +337,9 @@ def main():
                 if(Button1.collidepoint(mouse_pos) and pygame.mouse.get_pressed()[0]):
                     print("going to menu game")
                     current_menu = Menu.GAME
-                elif(Button2.collidepoint(mouse_pos) and pygame.mouse.get_pressed()[0]):
-                    print("going to menu settings")
-                    current_menu = Menu.SETTINGS
+                #elif(Button2.collidepoint(mouse_pos) and pygame.mouse.get_pressed()[0]):
+                #    print("going to menu settings")
+                #    current_menu = Menu.SETTINGS
                 elif(Button3.collidepoint(mouse_pos) and pygame.mouse.get_pressed()[0]):
                     print("exiting")
                     global_run = False
@@ -348,8 +400,10 @@ def main():
                 Button_Airplanes = pygame.Rect(Button_Airplanes_x, Button_Airplanes_y, 180, 40)
                 pygame.draw.rect(screen, (0, 0, 0), Button_Airplanes, border_radius = 10)
                 Airplanes = font.render("Buy Airplanes", True, (245, 222, 179))
+                my_money = "Money: " + str(get_money())
                 
                 title = font.render("Your frot", True, (255, 255, 255))
+                money = font.render(my_money, True, (255, 255, 255))
                 
                 screen.blit(humberto, (hx_s, hy_s))
                 screen.blit(Faro, (ax_s, ay_s))
@@ -415,6 +469,8 @@ def main():
                     dropdown.setX(-9999)
                     sidebar_button.setX(-9999)
                     
+                    
+                    screen.blit(money, (sidebar_x + 20, 80))
                     screen.blit(title, (sidebar_x + 20, 20))
                     screen.blit(Airplanes, (Button_Airplanes_x + 10, Button_Airplanes_y + 10))
                     
@@ -457,7 +513,25 @@ def main():
                 #Button_exit = pygame.rect()
             case Menu.SETTINGS:
                 print("on Settings")
-        pygame_widgets.update(events)
+        
+        pygame_widgets.update(events)            
+                
+        #if nomoney and not display_text_nomoney:
+        #        display_text_nomoney = True
+        #        start_time = get_current_time()
+        #        
+        #if display_text_nomoney:
+        #    text = font.render("You dont have enough money for this", True, (255, 0, 0))
+        #    screen.blit(text, (44, 357))
+        #    
+        #    if (get_current_time() - start_time).total_seconds > 3:
+        #        display_text_nomoney = False
+        #        nomoney = False
+        
+        planes.update()
+    
+        show_nomoney()
+    
         pygame.display.update()
 
 main()
