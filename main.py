@@ -152,6 +152,18 @@ def main():
         textHAlign = 'left'
     )
     
+    def coords_with_scale(wx, wy):
+        map_wx, map_wh = gamebg.get_width(), gamebg.get_height()
+        screen_wx, screen_wy = screen.get_width(), screen.get_height()
+        
+        scale_wx = screen_wx / map_wx
+        scale_wy = screen_wy / map_wh
+        
+        sx = int(wx * scale_wx)
+        sy = int(wy * scale_wy)
+        
+        return sx, sy
+    
     def print_values():
         #airport_to_go = dropdown.getSelected()
         #
@@ -165,13 +177,13 @@ def main():
         start = points[airport_from]
         end = points[airport_to]
         
-        start_screen = coords_with_zoom(start[0], start[1], camera_zoom, camera_x, camera_y)
-        end_screen = coords_with_zoom(end[0], end[1], camera_zoom, camera_x, camera_y)
+        scale_start = coords_with_scale(start[0], start[1])
+        scale_end = coords_with_scale(end[0], end[1])
         
         plane = Plane(
             os.path.join(base_path, "airplanes", "icon_small.png"),
-            start_screen,
-            end_screen,
+            scale_start,
+            scale_end,
             speed = 2
         )
         

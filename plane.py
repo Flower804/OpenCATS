@@ -25,3 +25,6 @@ class Plane(pygame.sprite.Sprite):
         else:
             self.pos = self.target
             self.rect.center = self.target
+            
+        if self.pos.distance_to(self.target) < 3:
+            self.kill()
