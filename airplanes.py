@@ -96,13 +96,18 @@ class Iventory:
                     return found
         return found 
     
-    def has(self, item_type, amount=1):
-        found = 0
+    def has(self, item_type, quantity=1):
+        #found = 0
+        #for slot in self.slots:
+        #    if slot.type == item_type:
+        #        found = found + slot.amount
+        #        if found >= amount:
+        #            True
+        #return False
         for slot in self.slots:
-            if slot.type == item_type:
-                found = found + slot.amount
-                if found >= amount:
-                    True
+            if slot.type is not None and slot.type.name == item_type.name:
+                if slot.amount >= quantity:
+                    return True
         return False 
         
 

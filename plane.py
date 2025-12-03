@@ -1,7 +1,8 @@
 import pygame
+from save import get_money, update_money
 
 class Plane(pygame.sprite.Sprite):
-    def __init__(self, image_path, start_pos, end_pos, speed=2, inventory=None, item_type=None):
+    def __init__(self, image_path, start_pos, end_pos, speed, inventory=None, item_type=None):
         super().__init__()
         
         self.inventory = inventory
@@ -21,6 +22,18 @@ class Plane(pygame.sprite.Sprite):
         else:
             self.velocity = pygame.math.Vector2(0, 0)
     
+    def get_paid(self):
+        print(get_money())
+        print(self.pos.distance_to(self.target) * 140)
+        
+        money_to_add = int(get_money()) + (self.pos.distance_to(self.target) * 140)
+        
+        print("added: ")
+        print(money_to_add)
+        print("to money")
+        update_money(money_to_add)
+    
+    
     #will make the plane move it move it
     def update(self):
         if self.pos.distance_to(self.target) > self.speed:
@@ -36,3 +49,4 @@ class Plane(pygame.sprite.Sprite):
                 print("added back the plane")
             
             self.kill()
+            self.get_paid()

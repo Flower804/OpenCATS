@@ -9,7 +9,7 @@ import datetime
 from enum import Enum, auto, IntEnum
 from airplanes import Iventory, ItemType
 from plane import Plane
-from save import get_money, get_planes, update_money
+from save import get_money, get_planes, update_money, save_planes
 #*************************************************************************#
 #                                                                         #
 #                                                                         #
@@ -153,7 +153,7 @@ def main():
     #Map = pygame.image.load(os.path.join(base_path, "ui", "Portugal-map.jpg")).convert_alpha()
     
     #iventory stuff
-    airplane_small = ItemType("Small Plane", "icon_small.png", stack_size=90)
+    airplane_small = ItemType("Small Plane", "icon_small.png", stack_size=1)
     airplane_big = ItemType("Big Plane", "icon_big.png", stack_size=90)
     
     player_iventory = Iventory(20)
@@ -207,7 +207,7 @@ def main():
         
         update_money((int(get_money()) - 150))
         
-        if player_iventory.has(airplane_small, 1) == False:
+        if not player_iventory.has(airplane_small, 1):
             print("you dont have any airplanes available")
             show_timed_warning("You dont have any airplanes available")
             update_money((int(get_money()) + 150))
@@ -228,7 +228,8 @@ def main():
             os.path.join(base_path, "airplanes", "icon_small.png"),
             scale_start,
             scale_end,
-            speed = 2,
+            #speed = 0.005,
+            speed = 0.05,
             inventory = player_iventory,
             item_type = airplane_small
         )
@@ -400,10 +401,10 @@ def main():
                 
                 Button_Airplanes = pygame.Rect(Button_Airplanes_x, Button_Airplanes_y, 180, 40)
                 pygame.draw.rect(screen, (0, 0, 0), Button_Airplanes, border_radius = 10)
-                Airplanes = font.render("Buy Airplanes", True, (245, 222, 179))
+                Airplanes = font.render("Buy Airplane - 150", True, (245, 222, 179))
                 my_money = "Money: " + str(get_money())
                 
-                title = font.render("Your frot", True, (255, 255, 255))
+                title = font.render("Your Frot", True, (255, 255, 255))
                 money = font.render(my_money, True, (255, 255, 255))
                 
                 screen.blit(humberto, (hx_s, hy_s))
@@ -483,12 +484,24 @@ def main():
                         font
                     )
                     
-                    hover_shop = Button_Airplanes.collidepoint(mouse_pos)
+                    for event in events:
+                        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                            if Button_Airplanes.collidepoint(event.pos):
+                                if get_money() > 150:
+                                    player_iventory.add(airplane_small, 1)
+                                    save_planes(int(get_planes()) + 1)
+                                    update_money(get_money() - 150)
+                                else:
+                                    show_timed_warning("You dont have enough money for this")
                     
-                    if(pygame.mouse.get_pressed()[0]):
-                        if(hover_shop):
-                            current_menu = Menu.SHOP
-                            print("going to shop")
+                    #hover_shop = Button_Airplanes.collidepoint(mouse_pos)
+                    #
+                    #if(pygame.mouse.get_pressed()[0]):
+                    #    if(hover_shop):
+                    #        if(get_money() > 150):
+                    #            player_iventory.add(airplane_small, 1)
+                    #            save_planes(int(get_planes()) + 1)
+                    #            update_money(get_money() - 150)
                     
                     
                 close_button = pygame.Rect(sidebar_x + SIDEBAR_WIDTH - 40, 10, 30, 30)
