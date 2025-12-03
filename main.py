@@ -20,14 +20,15 @@ from plane import Plane
 #*************************************************************************#
 
 def load_image_map():
-    img = pygame.image.load(os.path.join(base_path, "ui", "Portugal-map-withpoints.jpg")).convert()
+    img = pygame.image.load(os.path.join(base_path, "ui", "map_withpoints.png")).convert()
     width, height = img.get_size()
     
     map_data = []
     special_points = {
         "Humberto Delgado Airport ": [],
         "Francisco Sa Carneiro Airport ": [],
-        "AI Gago Coutinho": []
+        "AI Gago Coutinho": [],
+        "Madrid": []
     }
     
     for i in range(height):
@@ -49,14 +50,18 @@ def load_image_map():
                 special_points["Francisco Sa Carneiro Airport "] = (j, i)
                 print("special point on ")
                 print((i, j))
+            elif color == (255, 0, 4):
+                special_points["Madrid"] = (j, i)
+                print("special point on")
+                print((i, j))
         map_data.append(row)
     return map_data, special_points
 
-def coords_with_zoom(wx, wy, camera_zoom, camera_x, camera_y):
-    sx = wx * camera_zoom + camera_x
-    sy = wy * camera_zoom + camera_y
-    
-    return sx, sy
+#def coords_with_zoom(wx, wy, camera_zoom, camera_x, camera_y):
+#    sx = wx * camera_zoom + camera_x
+#    sy = wy * camera_zoom + camera_y
+#    
+#    return sx, sy
        
 def draw_iventory(surface, x, y, inventory, font):
     offset_y = 0
@@ -106,7 +111,12 @@ def main():
     menubg = pygame.image.load(os.path.join(base_path, "ui", "menu.png")).convert_alpha()
     font = pygame.font.Font(os.path.join(base_path, "ui", "font.ttf"))
     
-    gamebg = pygame.image.load(os.path.join(base_path, "ui", "Portugal-map.jpg")).convert_alpha()
+    gamebg = pygame.image.load(os.path.join(base_path, "ui", "map.png")).convert_alpha()
+    
+    scaled_map = pygame.transform.smoothscale(
+        gamebg,
+        (screen.get_width(), screen.get_height())
+    )
     
     title = font.render(name, True, (255, 255, 255))
 
@@ -124,7 +134,7 @@ def main():
     
     map_pixels, points = load_image_map()
     
-    selected_airport = "Humberto Delgado Airport "
+    #selected_airport = "Humberto Delgado Airport "
     
     #dropdown menus
     airport_names = list(points.keys())
@@ -217,23 +227,23 @@ def main():
                             if current_menu == Menu.GAME:
                                 current_menu = Menu.ESCAPEMENU
                                 
-            if(event.type == pygame.MOUSEWHEEL):
-                if(event.y > 0):
-                    camera_zoom = camera_zoom + zoom_speed
-                else:
-                    camera_zoom = camera_zoom - zoom_speed
+            #if(event.type == pygame.MOUSEWHEEL):
+            #    if(event.y > 0):
+            #        camera_zoom = camera_zoom + zoom_speed
+            #    else:
+            #        camera_zoom = camera_zoom - zoom_speed
                     
             camera_zoom = max(0.3, min(3.0, camera_zoom))    #cap the zoom bethwenm 3 amd 0.3                
         keys = pygame.key.get_pressed()
         
-        if(keys[pygame.K_w]):
-            camera_y = camera_y + scroll_speed
-        if(keys[pygame.K_s]):
-            camera_y = camera_y - scroll_speed
-        if(keys[pygame.K_a]):
-            camera_x = camera_x + scroll_speed
-        if(keys[pygame.K_d]):
-            camera_x = camera_x - scroll_speed
+        #if(keys[pygame.K_w]):
+        #    camera_y = camera_y + scroll_speed
+        #if(keys[pygame.K_s]):
+        #    camera_y = camera_y - scroll_speed
+        #if(keys[pygame.K_a]):
+        #    camera_x = camera_x + scroll_speed
+        #if(keys[pygame.K_d]):
+        #    camera_x = camera_x - scroll_speed
         
         screen.fill((0, 0, 0)) #clear the screen
         match current_menu:
@@ -279,35 +289,44 @@ def main():
                 hx, hy = points["Humberto Delgado Airport "]
                 ax, ay = points["AI Gago Coutinho"]
                 fx, fy = points["Francisco Sa Carneiro Airport "]
+                mx, my = points["Madrid"]
 
-                #transformed with zoom
-                hx_s, hy_s = coords_with_zoom(hx, hy, camera_zoom, camera_x, camera_y)
-                ax_s, ay_s = coords_with_zoom(ax, ay, camera_zoom, camera_x, camera_y)
-                fx_s, fy_s = coords_with_zoom(fx, fy, camera_zoom, camera_x, camera_y)
+                #transformed with scale
+                map_w, map_h = gamebg.get_width(), gamebg.get_height()
+                screen_w, screen_h = screen.get_width(), screen.get_height()
                 
-                button_w = int(180 * camera_zoom)
-                button_h = int(180 * camera_zoom)
+                scale_x = screen_w / map_w
+                scale_y = screen_h / map_h
+                
+                hx_s = int(hx * scale_x)
+                hy_s = int(hy * scale_y) 
+                ax_s = int(ax * scale_x)
+                ay_s = int(ay * scale_y) 
+                fx_s = int(fx *scale_x)
+                fy_s = int(fy * scale_y) 
+                mx_s = int(mx * scale_x)
+                my_s = int(my * scale_y)
+                
+                
+                button_w = 80
+                button_h = 50
                 
                 Button_humberto =  pygame.Rect(hx_s, hy_s, button_w, button_h)
                 Button_Faro = pygame.Rect(ax_s, ay_s, button_w, button_h)
                 Button_Francisco = pygame.Rect(fx_s, fy_s, button_w, button_h)
-                
-                #screen.blit(gamebg, (camera_x, camera_y)) --> no scale
-                scaled_map = pygame.transform.smoothscale(
-                    gamebg,
-                    (int(gamebg.get_width() * camera_zoom),
-                     int(gamebg.get_height() * camera_zoom))
-                )
-                
-                screen.blit(scaled_map, (camera_x, camera_y))
+                Button_Madrid = pygame.Rect(mx_s, my_s, button_w, button_h)
+                         
+                screen.blit(scaled_map, (0, 0))
                 
                 pygame.draw.rect(screen, (0, 0, 0), Button_humberto, border_radius = 10)
                 pygame.draw.rect(screen, (0, 0, 0), Button_Faro, border_radius = 10)
                 pygame.draw.rect(screen, (0, 0, 0), Button_Francisco, border_radius = 10)
+                pygame.draw.rect(screen, (0, 0, 0), Button_Madrid, border_radius= 10)
                  
                 humberto = font.render("Humberto Delgado", True, (245, 222, 179))
                 Faro = font.render("AI Gago Coutinho", True, (245, 222, 179))
                 Francisco = font.render("Francisco Sa Carneiro", True, (245, 222, 179))
+                Madrid = font.render("Madrid", True, (245, 222, 179))
                 
                 #--------------------- Buttons on the side bar--------------------------------------
                 
@@ -322,12 +341,14 @@ def main():
                 
                 screen.blit(humberto, (hx_s, hy_s))
                 screen.blit(Faro, (ax_s, ay_s))
-                screen.blit(Francisco, (fx_s, fy_s))                
+                screen.blit(Francisco, (fx_s, fy_s))   
+                screen.blit(Madrid, (mx_s, my_s))             
                 
                 mouse_pos = pygame.mouse.get_pos()
                 hover_humberto = Button_humberto.collidepoint(mouse_pos)
                 hover_Faro = Button_Faro.collidepoint(mouse_pos)
                 hover_Francisco = Button_Francisco.collidepoint(mouse_pos)
+                hover_Madrid = Button_Madrid.collidepoint(mouse_pos)
                 
                 if(pygame.mouse.get_pressed()[0]):
                     if(hover_humberto):
@@ -342,6 +363,10 @@ def main():
                         #rint("clicked Francisco")
                         selected_airport = "Francisco Sa Carneiro Airport "
                         sidebar_open = True
+                    if(hover_Madrid):
+                        selected_airport = "Madrid"
+                        sidebar_open = True    
+                    
                     #TODO: fix this so that the buttons on the sidebar are still usable
                     #if((not hover_humberto) and (not hover_Faro) and (not hover_Francisco)):
                     #    sidebar_open = False
