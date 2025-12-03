@@ -209,6 +209,7 @@ def main():
         
         if player_iventory.has(airplane_small, 1) == False:
             print("you dont have any airplanes available")
+            show_timed_warning("You dont have any airplanes available")
             update_money((int(get_money()) + 150))
             return
         
@@ -511,6 +512,7 @@ def main():
                                 case pygame.K_ESCAPE:
                                     current_menu = Menu.GAME
                 #Button_exit = pygame.rect()
+                #Button_airplane =  pygame.Rect()
             case Menu.SETTINGS:
                 print("on Settings")
         

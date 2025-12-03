@@ -1,8 +1,12 @@
 import pygame
 
 class Plane(pygame.sprite.Sprite):
-    def __init__(self, image_path, start_pos, end_pos, speed=2):
+    def __init__(self, image_path, start_pos, end_pos, speed=2, inventory=None, item_type=None):
         super().__init__()
+        
+        self.inventory = inventory
+        self.item_type = item_type
+        
         self.image = pygame.image.load(image_path).convert_alpha()
         self.rect = self.image.get_rect(center=start_pos)
         
@@ -27,4 +31,8 @@ class Plane(pygame.sprite.Sprite):
             self.rect.center = self.target
             
         if self.pos.distance_to(self.target) < 3:
+            if self.inventory is not None and self.item_type is not None:
+                self.inventory.add(self.item_type, 1)
+                print("added back the plane")
+            
             self.kill()

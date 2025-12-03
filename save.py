@@ -32,6 +32,10 @@ def update_money(new_quantity):
     
     with fileinput.input(file_path, inplace=True) as file:
         for line in file:
-            print(line.replace(old_value, new_value), end='')
-    file.close()        
+            #print(line.replace(old_value, new_value), end='')
+            if line.strip() == old_value:
+                print(new_value)
+            else:
+                print(line, end='')
+          
     
