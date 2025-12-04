@@ -21,18 +21,24 @@ from save import get_money, get_planes, update_money, save_planes
 #                                                                         #
 #                                                                         #
 #*************************************************************************#
+#get path relative to where the code is being executed
 base_path = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__))) 
 
+#nromal window definition stuff
 pygame.display.set_caption("OpenCATS")
-icon = pygame.image.load(os.path.join(base_path, "ui", "HOMOkisssssssssss.png"))
+icon = pygame.image.load(os.path.join(base_path, "ui", "logo.png"))
 pygame.display.set_icon(icon)
 
 name = "openCATS"
 
 pygame.init()
+pygame.mixer.init()
 screen = pygame.display.set_mode((1068, 768))
 
 clock = pygame.time.Clock()
+
+take_off = pygame.mixer.Sound(os.path.join(base_path, "util", "airplane.mp3"))
+
 #main menu things
 menubg = pygame.image.load(os.path.join(base_path, "ui", "menu.png")).convert_alpha()
 font = pygame.font.Font(os.path.join(base_path, "ui", "font.ttf"))
@@ -49,6 +55,7 @@ def load_image_map():
         "Madrid": []
     }
     
+    #run the height and width of the picture looking the coordinates where the colours are found    
     for i in range(height):
         row = []
         #print("In loop")
@@ -56,6 +63,7 @@ def load_image_map():
             color = img.get_at((j, i))[:3]
             row.append(color)
             
+            #if the colours are found save the coordinates in a dictionary correspondent to a special meaning
             if color == (255, 0, 1):
                 special_points["Humberto Delgado Airport "] = (j, i)
                 print("special point on ")
@@ -79,11 +87,10 @@ def load_image_map():
 #    sx = wx * camera_zoom + camera_x
 #    sy = wy * camera_zoom + camera_y
 #    
-#    return sx, sy 
+#    return sx, sy       
 
-nomoney = False       
-
-def draw_iventory(surface, x, y, inventory, font):
+def draw_iventory(surface, x, y, inventory):
+    #draw items in the invenctory to the sidebar
     offset_y = 0
     
     for slot in inventory.slots:
@@ -102,28 +109,32 @@ def draw_iventory(surface, x, y, inventory, font):
         surface.blit(amount_label, (x + 40, y + offset_y + 30))
         
         offset_y = offset_y + 60
-             
+    
+#class with all the possible menus, associated to a unique Enum       
 class Menu(Enum):
     MAIN_MENU = auto()
     #SETTINGS = auto()
     GAME = auto()
-    SHOP = auto()
+    #SHOP = auto()
     ESCAPEMENU = auto()
-    
+
+
+#create plane sprite group thingy
+planes = pygame.sprite.Group()    
+
 #message things
 show_warning = False
 warning_time_start = None
 warning_text = ""
-warning_duration = 0
 
 def show_timed_warning(text):
-    global show_warning, warning_time_start, warning_text, warning_duration
+    global show_warning, warning_time_start, warning_text 
     show_warning = True
     warning_time_start = datetime.datetime.now()
     warning_text = text
 
 def show_nomoney():
-    global show_warning, warning_time_start, warning_text, warning_duration
+    global show_warning, warning_time_start, warning_text
     
     if not show_warning:
         return
@@ -136,8 +147,6 @@ def show_nomoney():
     screen.blit(warning_surface, (44, 457))
 
 #main menu things
-
-planes = pygame.sprite.Group()
 
 def main():
     
@@ -215,6 +224,8 @@ def main():
         
         player_iventory.remove(airplane_small, 1)
         
+        take_off.play()
+        
         airport_from = selected_airport
         airport_to = dropdown.getSelected()
         
@@ -240,7 +251,7 @@ def main():
         screen,
         -9999, 150,
         180, 40,
-        text = 'calculate rout',
+        text = 'Start Flight',
         fontSize = 18,
         margin = 5,
         inactiveColour = (255, 0, 0),
@@ -250,10 +261,10 @@ def main():
         font = pygame.font.SysFont('calibri', 20)
     ) 
     
-    def get_current_time():
-        time = datetime.datetime.now()
-        
-        return time
+    #def get_current_time():
+    #    time = datetime.datetime.now()
+    #    
+    #    return time
     
     #camera things
     #camera_x = 0
@@ -262,7 +273,7 @@ def main():
     #camera_zoom = 1.0
     #zoom_speed = 0.1
     
-    speed = 0
+    #speed = 0
     
     #menus
     sidebar_open = False
@@ -273,10 +284,10 @@ def main():
     
     #debug things
     current_menu = Menu.MAIN_MENU
-    tick = 0
+    #tick = 0
     
-    nomoney = False
-    display_text_nomoney = False
+    #nomoney = False
+    #display_text_nomoney = False
     global_run = True
     while global_run:
         events = pygame.event.get()
@@ -299,7 +310,7 @@ def main():
             #        camera_zoom = camera_zoom - zoom_speed
                     
             #camera_zoom = max(0.3, min(3.0, camera_zoom))    #cap the zoom bethwenm 3 amd 0.3                
-        keys = pygame.key.get_pressed()
+        #keys = pygame.key.get_pressed()
         
         #if(keys[pygame.K_w]):
         #    camera_y = camera_y + scroll_speed
@@ -462,11 +473,11 @@ def main():
                     sidebar_button.setX(sidebar_x + 20)
                     sidebar_button.setY(180)
                     
-                    text_x = dropdown.getX() + dropdown.getWidth() + 10
-                    text_y = dropdown.getY()
+                    #text_x = dropdown.getX() + dropdown.getWidth() + 10
+                    #text_y = dropdown.getY()
                     
                     current_selected = font.render(selected_airport, True, (255, 255, 255))
-                    screen.blit(current_selected, (text_x, text_y))
+                    #screen.blit(current_selected, (text_x, text_y))
                 else:
                     dropdown.setX(-9999)
                     sidebar_button.setX(-9999)
@@ -480,8 +491,7 @@ def main():
                         screen,
                         sidebar_x + 20,
                         Button_Airplanes_y + 80,
-                        player_iventory,
-                        font
+                        player_iventory
                     )
                     
                     for event in events:
